@@ -1,7 +1,7 @@
 object Main {
 
   def main(args: Array[String]): Unit = {
-    Advent14.run()
+    Advent15.run()
   }
 
 }
