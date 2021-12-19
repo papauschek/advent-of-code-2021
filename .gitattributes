@@ -1,0 +1,3 @@
+# use original line endings on all platforms (prevent Linux Subsystem for Windows issues)
+[core]
+	autocrlf=false
