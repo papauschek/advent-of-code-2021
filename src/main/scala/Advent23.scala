@@ -3,12 +3,41 @@ import java.nio.file.{Files, Path}
 object Advent23 {
 
   def main(args: Array[String]): Unit = {
-    val world = World(Files.readString(Path.of("./data/input23.txt")).linesIterator.toList)
+    val baseWorld = World(Files.readString(Path.of("./data/input23.txt")).linesIterator.toList)
 
-    var unorganized = world :: Nil
-    var organized = List.empty[World]
+    /*
+    var testSet = Set.empty[World]
+    var test = baseWorld
+    while (true) {
+      testSet += test.copy(energy = 0)
+      test = test.options.filterNot(o => testSet.contains(o.copy(energy = 0))).minByOption(_.energy).getOrElse(throw new IllegalArgumentException(test.options.length.toString))
+      println(test)
+    }
+    ???
 
+     */
 
+    var worlds = Set(baseWorld)
+    var solution = Option.empty[World]
+
+    while (worlds.nonEmpty) {
+
+      val world = worlds.head//.minBy(_.energy)
+
+      val maxEnergy = solution.map(_.energy).getOrElse(Int.MaxValue)
+      val (solutions, options) = world.options.partition(_.isOrganized)
+      if (solutions.exists(_.energy < maxEnergy)) {
+        solution = solutions.minByOption(_.energy)
+      }
+
+      worlds = ((worlds - world) ++ options).groupBy(_.lines).map {
+        case (_, list) => list.minBy(_.energy)
+      }.filter(_.energy < maxEnergy).toSet
+
+      println(worlds.size, world.energy, worlds.maxBy(_.energy).energy, solution.map(_.energy))
+      //println(world)
+      // 22768, 16136, 11446
+    }
   }
 
   private val noStopLocations = Set(Point(3, 1), Point(5, 1), Point(7, 1), Point(9, 1))
@@ -52,7 +81,7 @@ object Advent23 {
           val isInHallway = location.y == 1
           val destinationX = destinationXByPod(get(location))
           val roomHasWrongPod = locations.exists(l => l.y >= 2 && l.x == destinationX && destinationXByPod(get(l)) != l.x)
-          val destinationRoomSpaces = roomSpaces.filter(s => s.x == destinationX && !roomHasWrongPod)
+          val destinationRoomSpaces = roomSpaces.filter(s => s.x == destinationX && !roomHasWrongPod && isInHallway).maxByOption(_.y)
           val possibleHallSpaces = hallSpaces.filterNot(_ => isInHallway)
           (destinationRoomSpaces ++ possibleHallSpaces).map(l => withLocation(location, l))
       }
